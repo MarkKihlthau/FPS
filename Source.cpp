@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <Windows.h>
 #include <chrono>
+#include "Item.h"
 using namespace std;
 
 int nScreenWidth = 120;
@@ -35,7 +36,7 @@ int main()
 	SetConsoleActiveScreenBuffer(hConsole);
 	DWORD dwBytesWritten = 0;
 
-	wstring map;
+	wstring map; //16x16 map
 	map += L"################";
 	map += L"#..............#";
 	map += L"#..............#";
@@ -43,15 +44,15 @@ int main()
 	map += L"#......####....#";
 	map += L"#..............#";
 	map += L"#..............#";
-	map += L"#..............#"; //8
+	map += L"#..............#"; //7
 	map += L"#...######.....#";
 	map += L"#..............#";
 	map += L"#........#######";
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#############..#";
-	map += L"#..............#";
-	map += L"################"; //16
+	map += L"#.........H....#";
+	map += L"################"; //15
 
 	auto TimeP1 = chrono::system_clock::now();
 	auto TimeP2 = chrono::system_clock::now();
@@ -71,14 +72,14 @@ int main()
 		//Dispay walls and shading
 		Environment(screen, map);
 
-		//Display Stats
-		swprintf_s(screen, 40, L"X=%3.2f, Y=%3.2f, A%3.2f FPS=%3.2f", fPlayerX, fPlayerY, fPlayerA, 1.0f / fElapsedTime);
-
 		//Aiming Recticle
 		AimingRect(screen);
 
 		//Display Mini-Map
 		MiniMap(screen, map);
+
+		//Display Stats
+		//swprintf_s(screen, 40, L"X=%3.2f, Y=%3.2f, A%3.2f FPS=%3.2f", fPlayerX, fPlayerY, fPlayerA, 1.0f / fElapsedTime);
 		
 		//Display Frame 
 		screen[nScreenWidth * nScreenHeight - 1] = '/0';
@@ -188,7 +189,19 @@ void Environment(wchar_t* screen, wstring map)
 					if (acos(p.at(2).second) < fBound) bBoundary = true;
 				}
 
-			}
+				if (map[nTestY * nMapWidth + nTestX] == 'H')
+				{
+					Item* H1;
+					H1 = Item::Create("HealthPack");
+					H1->place(10, 14);
+					if ((10.0 <= fPlayerX && fPlayerX <= 10.99) && (14.0 <= fPlayerY && fPlayerY <= 14.99))
+					{
+						swprintf_s(screen, 40, L"HealthPack picked up!");
+					}
+					
+				}
+
+			} //end else
 
 		}
 
