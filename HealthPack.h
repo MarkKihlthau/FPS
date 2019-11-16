@@ -6,16 +6,10 @@ public:
 	HealthPack() {}
 	~HealthPack() {}
 
-	void pickup();
-	void place(int x, int y);
+	int pickup();
 };
 
-void HealthPack::pickup()
+int HealthPack::pickup()
 {
-
-}
-
-void HealthPack::place(int x, int y)
-{
-	item_at[x][y] = 1;
+	return 1;
 }

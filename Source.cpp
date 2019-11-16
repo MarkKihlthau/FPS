@@ -27,6 +27,9 @@ void MiniMap(wchar_t*, wstring);
 void AimingRect(wchar_t*);
 
 bool shot = false;
+int health = 1;
+int item_pickup;
+int items[16][16];
 
 int main()
 {
@@ -48,11 +51,16 @@ int main()
 	map += L"#...######.....#";
 	map += L"#..............#";
 	map += L"#........#######";
-	map += L"#..............#";
+	map += L"#............H.#";
 	map += L"#..............#";
 	map += L"#############..#";
-	map += L"#.........H....#";
+	map += L"#.........H...W#";
 	map += L"################"; //15
+
+	items[10][14] = 1; //Healthpack
+	items[13][11] = 1;
+
+	items[14][14] = 2; //Weapon
 
 	auto TimeP1 = chrono::system_clock::now();
 	auto TimeP2 = chrono::system_clock::now();
@@ -80,6 +88,7 @@ int main()
 
 		//Display Stats
 		//swprintf_s(screen, 40, L"X=%3.2f, Y=%3.2f, A%3.2f FPS=%3.2f", fPlayerX, fPlayerY, fPlayerA, 1.0f / fElapsedTime);
+		swprintf_s(screen, 20, L"Health:%d", health);
 		
 		//Display Frame 
 		screen[nScreenWidth * nScreenHeight - 1] = '/0';
@@ -193,12 +202,46 @@ void Environment(wchar_t* screen, wstring map)
 				{
 					Item* H1;
 					H1 = Item::Create("HealthPack");
-					H1->place(10, 14);
-					if ((10.0 <= fPlayerX && fPlayerX <= 10.99) && (14.0 <= fPlayerY && fPlayerY <= 14.99))
+					if ((10.0 <= fPlayerX && fPlayerX <= 10.99) && (14.0 <= fPlayerY && fPlayerY <= 14.99)
+						&& (items[10][14] == 1))
 					{
-						swprintf_s(screen, 40, L"HealthPack picked up!");
+						item_pickup = H1->pickup();
+						if (item_pickup == 1)
+						{
+							health = 100;
+							items[10][14] = 0;
+						}
 					}
+
+					if ((13.0 <= fPlayerX && fPlayerX <= 13.99) && (11.0 <= fPlayerY && fPlayerY <= 11.99)
+						&& (items[13][11] == 1))
+					{
+						item_pickup = H1->pickup();
+						if (item_pickup == 1)
+						{
+							health = 100;
+							items[13][11] = 0;
+						}
+					}
+
 					
+				}
+
+				if (map[nTestY * nMapWidth + nTestX] == 'W')
+				{
+					Item* W1;
+					W1 = Item::Create("Weapon");
+					if ((14.0 <= fPlayerX && fPlayerX <= 14.99) && (14.0 <= fPlayerY && fPlayerY <= 14.99)
+						&& (items[14][14] == 2))
+					{
+						item_pickup = W1->pickup();
+						if (item_pickup == 2)
+						{
+							health = 1;
+							items[14][14] = 0;
+						}
+					}
+
 				}
 
 			} //end else

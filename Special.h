@@ -6,6 +6,10 @@ public:
 	Special() {}
 	~Special() {}
 
-	void pickup();
-	void place();
+	int pickup();
 };
+
+int Special::pickup()
+{
+	return 3;
+}
