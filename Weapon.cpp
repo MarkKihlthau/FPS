@@ -31,3 +31,20 @@ void Weapon::set_weapon(string type)
 		//Error state.
 	}
 }
+
+string Weapon::get_name()
+{
+	return name;
+}
+int Weapon::get_damage()
+{
+	return damage;
+}
+int Weapon::get_capacity()
+{
+	return capacity;
+}
+int Weapon::get_reload()
+{
+	return reload;
+}

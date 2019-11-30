@@ -12,6 +12,8 @@ public:
 	int pickup();
 	void reloadable();
 	void set_ammo(string type);
+	string get_name();
+	int get_amount();
 };
 
 int Ammo::pickup()
@@ -43,4 +45,14 @@ void Ammo::set_ammo(string type)
 	{
 		//Error State.
 	}
+}
+
+string Ammo::get_name()
+{
+	return name;
+}
+
+int Ammo::get_amount()
+{
+	return amount;
 }

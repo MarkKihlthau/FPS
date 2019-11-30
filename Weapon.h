@@ -9,6 +9,10 @@ public:
 	virtual int pickup();
 	virtual void reloadable();
 	void set_weapon(string type);
+	string get_name();
+	int get_damage();
+	int get_capacity();
+	int get_reload();
 
 	string name = "Null";
 	int damage = 0;
