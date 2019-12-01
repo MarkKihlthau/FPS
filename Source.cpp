@@ -10,71 +10,73 @@
 #include "Enemy.h"
 using namespace std;
 
-int nScreenWidth = 120;
+int nScreenWidth = 120; //Screen Size
 int nScreenHeight = 40;
 
 float fPlayerX = 1.0f; //player X position
 float fPlayerY = 14.5f; //player Y position
 float fPlayerA = 1.5f; //player look Angle
 
-int nMapHeight = 16;
+int nMapHeight = 16; //Map Size
 int nMapWidth = 16;
 
 float fFOV = 3.14159 / 4; //field of view
 float fDepth = 16.0f;
-float fSpeed = 5.0f;
+float fSpeed = 5.0f; //player movement speed
 
 void Controls(float, wstring, wchar_t*);
 void Environment(wchar_t*, wstring);
 void MiniMap(wchar_t*);
-void AimingRect(wchar_t*);
 void CheckWeaponName();
 void WeaponArt(wchar_t*);
 void MoveEnemy();
 
-bool shot = false;
 int item_pickup;
-int items[16][16];
-int enemies[16][16];
+int items[16][16]; //array for item location
+int enemies[16][16]; //array for enemy location
 int GameLoopCount = 0;
-const int ActionLoopCount = 40;
+const int ActionLoopCount = 40; //loop count for how often player can shoot
 float bullet;
-int HitX;
-int HitY;
+int HitX; //X location of gunshot hit
+int HitY; //Y location of gunshot hit
 
-Enemy E1;
+Enemy E1; //Ghost enemy
 int E1_hp = E1.get_health();
-int EnemyX = 9;
-int EnemyY = 6;
+int EnemyX = 9; //Enemy starting X position
+int EnemyY = 6; //Enemy starting Y position
 
-
+//Strings for weapon name
 string wname = "";
 wchar_t w1[10] = L"None";
 wchar_t w2[10] = L"Pistol";
 wchar_t w3[10] = L"RailGun";
 
-//Stats
+//Player Stats
 int health = 1;
 int damage = 0;
 wchar_t weapon[10];
 int capacity = 0;
 int reload = 0;
+bool victory = false;
+bool displayVictory = false;
 
 int hit_enemy = 0;
-int EnemyMoveCount = 0;
+int EnemyMoveCount = 0; //Counter for enemy movement
+int EnemyMoveSpeed = 200; //How fast the enemy moves
 
-wstring map; //16x16 map
-int LoadMapCount = 20;
+wstring map; //string that holds the map
 
 int main()
 {
-	srand(time(NULL));
 	//Create Screen Buffer
 	wchar_t *screen = new wchar_t[nScreenWidth*nScreenHeight];
 	HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 	SetConsoleActiveScreenBuffer(hConsole);
 	DWORD dwBytesWritten = 0;
 
+	srand(time(NULL)); //For random number generation
+
+	//Load map
 	map += L"################";
 	map += L"#..............#";
 	map += L"#..............#";
@@ -92,8 +94,6 @@ int main()
 	map += L"#.........H...W#";
 	map += L"################"; //15
 
-	//map[220] = '.';
-
 	items[10][14] = 1; //Healthpack
 	items[13][11] = 1;
 
@@ -103,6 +103,8 @@ int main()
 
 	auto TimeP1 = chrono::system_clock::now();
 	auto TimeP2 = chrono::system_clock::now();
+	auto TimeP3 = chrono::system_clock::now();
+	float fElapsedGameTime = 0;
 
 	//Game Loop
 	while (1)
@@ -123,7 +125,7 @@ int main()
 		WeaponArt(screen);
 
 		//Move the Ghost
-		if (EnemyMoveCount == 200)
+		if (EnemyMoveCount == EnemyMoveSpeed && victory == false)
 		{
 			MoveEnemy();
 			EnemyMoveCount = 0;
@@ -132,11 +134,22 @@ int main()
 		//Display Stats
 		//swprintf_s(screen, 40, L"X=%3.2f, Y=%3.2f, A%3.2f FPS=%3.2f", fPlayerX, fPlayerY, fPlayerA, 1.0f / fElapsedTime);
 		CheckWeaponName();
-		swprintf_s(screen, 100, L"Health:%d Weapon:%s Capacity:%d/Reload:%d HitX:%d HitY:%d GhostHP:%d GX:%d GY:%d", 
-			health, weapon, capacity, reload, HitX, HitY, E1_hp, EnemyX, EnemyY);
-		
-		//Aiming Recticle
-		AimingRect(screen);
+		if (victory == false)
+		{
+			swprintf_s(screen, 100, L"Health:%d Weapon:%s Capacity:%d/Reload:%d HitX:%d HitY:%d GhostHP:%d GX:%d GY:%d",
+				health, weapon, capacity, reload, HitX, HitY, E1_hp, EnemyX, EnemyY);
+		}
+		else
+		{
+			if (displayVictory == false)
+			{
+				auto TimeP4 = chrono::system_clock::now();
+				chrono::duration<float> elapsedGameTime = TimeP4 - TimeP3;
+				fElapsedGameTime = elapsedGameTime.count();
+				displayVictory = true;
+			}
+			swprintf_s(screen, 100, L"You Win! Elapsed Time:%3.2f", fElapsedGameTime);
+		}
 
 		//Display Mini-Map
 		MiniMap(screen);
@@ -145,11 +158,22 @@ int main()
 		screen[nScreenWidth * nScreenHeight - 1] = '/0';
 		WriteConsoleOutputCharacter(hConsole, screen, nScreenWidth * nScreenHeight, { 0,0 }, &dwBytesWritten);
 
+		if (health <= 0)
+		{
+			break;
+		}
+
 		if (GameLoopCount < ActionLoopCount)
 			GameLoopCount++;
-		if (EnemyMoveCount < 200)
+		if (EnemyMoveCount < EnemyMoveSpeed)
 			EnemyMoveCount++;
 		
+	}
+	cout << "You died.";
+	char fail;
+	while (1)
+	{
+		cin >> fail;
 	}
 	return 0;
 }
@@ -198,7 +222,6 @@ void Controls(float fElapsedTime, wstring map, wchar_t* screen)
 	{
 		if (capacity > 0 && GameLoopCount == ActionLoopCount)
 		{
-			shot = true;
 			capacity = capacity - 1;
 			GameLoopCount = 0;
 			hit_enemy = 0;
@@ -362,14 +385,15 @@ void Environment(wchar_t* screen, wstring map)
 
 				if (map[nTestY * nMapWidth + nTestX] == 'X')
 				{
-					if ((9.0 <= fPlayerX && fPlayerX <= 9.99) && (6.0 <= fPlayerY && fPlayerY <= 6.99)
-						&& (enemies[EnemyX][EnemyY] == 1))
+					if ((((float)EnemyX-1.0) <= fPlayerX && fPlayerX <= ((float)EnemyX+1.0) && 
+						(((float)EnemyY-1.0) <= fPlayerY && fPlayerY <= ((float)EnemyY+1.0))))
 					{
 						health = health - E1.strike();
 					}
 					if (E1.alive() == false)
 					{
 						enemies[EnemyX][EnemyY] = 0;
+						victory = true;
 					}
 
 				}
@@ -453,7 +477,12 @@ void MiniMap(wchar_t* screen)
 		screen[1801] = '.';
 
 	screen[((int)fPlayerY + 1) * nScreenWidth + (int)(nMapWidth - fPlayerX)] = 'P';
-	screen[(EnemyY + 1) * nScreenWidth + (nMapWidth - EnemyX)] = 'X';
+	if (victory == false)
+		screen[(EnemyY + 1) * nScreenWidth + (nMapWidth - EnemyX)] = 'X';
+	else
+	{
+		screen[(EnemyY + 1) * nScreenWidth + (nMapWidth - EnemyX)] = '.';
+	}
 
 	screen[1683] = '.';
 	//map[220] = '.';
@@ -467,26 +496,6 @@ void MiniMap(wchar_t* screen)
 	
 
 	
-}
-
-void AimingRect(wchar_t* screen)
-{
-	/*
-	for (int n1 = 2340; n1 > 1860; n1 = n1 - 120) //top
-		screen[n1] = '!';
-	for (int n2 = 2580; n2 < 3060; n2 = n2 + 120) //bottom
-		screen[n2] = '!';
-	for (int n3 = 2462; n3 < 2469; n3++) //left
-		screen[n3] = '!';
-	for (int n4 = 2458; n4 > 2451; n4--) //right
-		screen[n4] = '!';
-	*/
-	//Bullet
-	if (shot == true && GameLoopCount == 0)
-	{
-		screen[2460] = '.';
-		shot = false;
-	}
 }
 
 void CheckWeaponName()

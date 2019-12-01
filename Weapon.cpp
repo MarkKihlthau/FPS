@@ -15,7 +15,7 @@ void Weapon::set_weapon(string type)
 	if (type == "Pistol")
 	{
 		name = "Pistol";
-		damage = 5;
+		damage = 100;
 		capacity = 16;
 		reload = 32;
 	}

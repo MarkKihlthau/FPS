@@ -13,9 +13,7 @@ public:
 
 	int strike()
 	{
-		srand(time(NULL));
-		int damage = base_damage + (rand() % 10);
-		return damage;
+		return base_damage;
 	}
 
 	bool alive()
@@ -33,5 +31,5 @@ public:
 
 private:
 	int health = 100;
-	int base_damage = 5;
+	int base_damage = 1;
 };
